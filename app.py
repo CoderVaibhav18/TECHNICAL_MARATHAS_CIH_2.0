@@ -37,7 +37,7 @@ def predict():
 
     preds = model.predict(img_array)
     pred_class = class_names[np.argmax(preds)]
-    confidence = float(np.max(preds)) * 100
+    
 
     return jsonify({"prediction": pred_class, "confidence": confidence})
 
