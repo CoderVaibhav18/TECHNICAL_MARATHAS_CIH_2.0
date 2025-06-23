@@ -1,0 +1,98 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background: #eaf0f6;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 40px;
+}
+
+.chat-container {
+  width: 100%;
+  max-width: 550px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  overflow: hidden;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #007bff;
+}
+
+.chat-box {
+  height: 360px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 15px;
+  background: #fafafa;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.bubble {
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  border-radius: 20px;
+  max-width: 85%;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.user {
+  background-color: #d1e7dd;
+  align-self: flex-end;
+  text-align: right;
+  border-bottom-right-radius: 4px;
+}
+
+.bot {
+  background-color: #f8d7da;
+  text-align: left;
+  border-bottom-left-radius: 4px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 10px;
+  font-size: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.dropdown {
+  padding: 10px;
+  font-size: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.btn {
+  padding: 10px 14px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn.send {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.btn.voice {
+  background-color: #28a745;
+  color: #fff;
+}

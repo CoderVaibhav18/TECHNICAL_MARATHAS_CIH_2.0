@@ -1,0 +1,13 @@
+flask
+google-generativeai
+python-dotenv
+vosk
+gtts
+googletrans==4.0.0-rc1
+flask-cors
+gTTS
+SpeechRecognition 
+pyaudio
+tensorflow
+pillow
+numpy

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MediScanAI 🩺 Chatbot</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="chat-container">
+    <h1>MediScanAI 🩺</h1>
+    <div id="chat-box" class="chat-box"></div>
+
+    <div class="controls">
+      <select id="language-toggle" class="dropdown">
+        <option value="en">🌐 Select Language</option>
+        <option value="en">🇬🇧 English</option>
+        <option value="hi">🇮🇳 Hindi</option>
+        <option value="mr">🇮🇳 Marathi</option>
+      </select>
+
+      <input type="text" id="user-input" placeholder="Type your symptoms..." />
+      <button class="btn send" onclick="sendMessage()">Send</button>
+      <button class="btn voice" onclick="recordVoice()">🎤</button>
+    </div>
+  </div>
+
+  <script>
+    function recordVoice() {
+      const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
+      const lang = document.getElementById("language-toggle").value;
+      recognition.lang = lang === 'auto' ? 'hi-IN' : `${lang}-IN`;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.start();
+
+      recognition.onresult = async function(event) {
+        const speechResult = event.results[0][0].transcript;
+        document.getElementById("user-input").value = speechResult;
+        await sendMessage();
+      };
+
+      recognition.onerror = function(event) {
+        alert("Voice input failed: " + event.error);
+      };
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById("user-input").value.trim();
+      const lang = document.getElementById("language-toggle").value;
+      if (!input) return;
+
+      const chatBox = document.getElementById("chat-box");
+      chatBox.innerHTML += `<div class="bubble user"><strong>You:</strong> ${input}</div>`;
+
+      const response = await fetch('/chat', {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input, lang: lang })
+      });
+
+      const data = await response.json();
+      chatBox.innerHTML += `<div class="bubble bot"><strong>MediScanAI:</strong> ${data.reply}</div>`;
+
+      if (data.audio) {
+        const audio = new Audio(data.audio);
+        audio.play();
+      }
+
+      document.getElementById("user-input").value = "";
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  </script>
+</body>
+</html>
