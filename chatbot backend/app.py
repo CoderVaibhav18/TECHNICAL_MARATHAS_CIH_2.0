@@ -7,7 +7,7 @@ from tensorflow.keras.preprocessing import image
 import numpy as np
 
 
-app = Flask(_name_)
+app = Flask(__name__)
 CORS(app)
 
 # Load models
@@ -56,5 +56,5 @@ def predict_xray():
         return jsonify(result)
     return jsonify({'error': 'No image uploaded'}), 400
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     app.run(debug=True)
