@@ -1,77 +1,60 @@
-from flask import Flask, render_template, request, jsonify
-from app.chatbot import mediscan_chat
-from flask_cors import CORS
-import joblib  # or import pickle, torch, etc.
 import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+import numpy as np
 
-app = Flask(__name__)
+
+app = Flask(_name_)
 CORS(app)
 
-# Load your ML models (update paths and loading as needed)
-MODEL1_PATH = "./model/xray_model_pneumonia_vs_normal.h5"
-MODEL2_PATH = "./model/skin_disease_model.h5"
+# Load models
+skin_model = load_model("model/skin_disease_model.h5")
+xray_model = load_model("model/xray_model_pneumonia_vs_normal.h5")
 
-try:
-    model1 = joblib.load(MODEL1_PATH)
-except Exception as e:
-    model1 = None
-    print(f"Error loading model1: {e}")
-try:
-    model2 = joblib.load(MODEL2_PATH)
-except Exception as e:
-    model2 = None
-    print(f"Error loading model2: {e}")
+skin_labels = ['Acne', 'Eczema', 'Fungal', 'Psoriasis', 'Other']
+xray_labels = ['Normal', 'Pneumonia']
 
+def prepare_image(img, target_size):
+    img = img.resize(target_size)
+    img = image.img_to_array(img)
+    img = img / 255.0
+    img = np.expand_dims(img, axis=0)
+    return img
 
-@app.route("/")
+@app.route('/')
 def home():
     return render_template("index.html")
 
-
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.get_json()
-    message = data.get("message")
-    lang = data.get("lang", "auto")
-
-    if not message:
-        return jsonify({"reply": "Please speak or type a valid message."}), 400
-
-    result = mediscan_chat(message, lang)
-    return jsonify({"reply": result["text"], "audio": result["audio_path"]})
-
-
-@app.route("/predict_xray", methods=["POST"])
-def predict_xray():
-    """Endpoint for X-ray ML model prediction (uses model1)."""
-    if model1 is None:
-        return jsonify({"error": "X-ray model not loaded"}), 500
-    data = request.get_json()
-    features = data.get("features")
-    if features is None:
-        return jsonify({"error": "No features provided"}), 400
-    try:
-        prediction = model1.predict([features])
-        return jsonify({"prediction": prediction[0]})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/predict_skin", methods=["POST"])
+@app.route('/predict/skin', methods=['POST'])
 def predict_skin():
-    """Endpoint for Skin ML model prediction (uses model2)."""
-    if model2 is None:
-        return jsonify({"error": "Skin model not loaded"}), 500
-    data = request.get_json()
-    features = data.get("features")
-    if features is None:
-        return jsonify({"error": "No features provided"}), 400
-    try:
-        prediction = model2.predict([features])
-        return jsonify({"prediction": prediction[0]})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    file = request.files.get('image')
+    if file:
+        img = image.load_img(file, target_size=(224, 224))
+        img_tensor = prepare_image(img, (224, 224))
+        preds = skin_model.predict(img_tensor)
+        result = {
+            'prediction': skin_labels[np.argmax(preds)],
+            'confidence': float(np.max(preds))
+        }
+        return jsonify(result)
+    return jsonify({'error': 'No image uploaded'}), 400
 
+@app.route('/predict/xray', methods=['POST'])
+def predict_xray():
+    file = request.files.get('image')
+    if file:
+        img = image.load_img(file, target_size=(224, 224))
+        img_tensor = prepare_image(img, (224, 224))
+        preds = xray_model.predict(img_tensor)
+        result = {
+            'prediction': xray_labels[np.argmax(preds)],
+            'confidence': float(np.max(preds))
+        }
+        return jsonify(result)
+    return jsonify({'error': 'No image uploaded'}), 400
 
-if __name__ == "__main__":
+if _name_ == '_main_':
     app.run(debug=True)
